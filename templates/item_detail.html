@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - ReWear{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('browse_items') }}">Browse</a></li>
+            <li class="breadcrumb-item active">{{ item.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Images -->
+        <div class="col-lg-6">
+            {% if images %}
+                <div id="itemCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in images %}
+                        <div class="carousel-item {{ 'active' if loop.first }}">
+                            <img src="{{ url_for('static', filename='uploads/' + image) }}" 
+                                 class="d-block w-100 rounded item-detail-image" alt="{{ item.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="placeholder-image-large bg-light d-flex align-items-center justify-content-center rounded">
+                    <i data-feather="image" class="text-muted" style="width: 64px; height: 64px;"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Item Details -->
+        <div class="col-lg-6">
+            <div class="item-details">
+                <h1 class="h2 fw-bold">{{ item.title }}</h1>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-success fs-5 me-3">{{ item.coin_value }} coins</span>
+                    <span class="badge bg-light text-dark">{{ item.size }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Listed by:</h6>
+                    <a href="{{ url_for('profile', username=item.owner.username) }}" class="text-decoration-none">
+                        <i data-feather="user" class="me-1"></i>{{ item.owner.username }}
+                    </a>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <h6>Category:</h6>
+                        <p class="text-muted">{{ item.category.name }}</p>
+                    </div>
+                    <div class="col-6">
+                        <h6>Condition:</h6>
+                        <p class="text-muted">{{ item.condition }}</p>
+                    </div>
+                </div>
+                
+                {% if item.tags %}
+                <div class="mb-3">
+                    <h6>Tags:</h6>
+                    {% for tag in item.tags.split(',') %}
+                        <span class="badge bg-light text-dark me-1">{{ tag.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h6>Description:</h6>
+                    <p class="text-muted">{{ item.description }}</p>
+                </div>
+                
+                <!-- Action Buttons -->
+                {% if can_interact %}
+                    {% if current_user.is_authenticated %}
+                        <div class="d-grid gap-2">
+                            {% if has_enough_coins %}
+                                <a href="{{ url_for('redeem_item', item_id=item.id) }}" 
+                                   class="btn btn-success btn-lg"
+                                   onclick="return confirm('Are you sure you want to redeem this item for {{ item.coin_value }} coins?')">
+                                    <i data-feather="shopping-bag" class="me-2"></i>
+                                    Redeem for {{ item.coin_value }} coins
+                                </a>
+                            {% else %}
+                                <button class="btn btn-success btn-lg" disabled>
+                                    <i data-feather="shopping-bag" class="me-2"></i>
+                                    Need {{ item.coin_value - current_user.coin_balance }} more coins
+                                </button>
+                            {% endif %}
+                            
+                            {% if swap_form.offered_item_id.choices %}
+                                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#swapModal">
+                                    <i data-feather="refresh-cw" class="me-2"></i>
+                                    Send Swap Request
+                                </button>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i data-feather="info" class="me-2"></i>
+                                    Need approved items to swap
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-primary border-0 mb-4">
+                            <div class="text-center">
+                                <i data-feather="lock" class="mb-2" style="width: 48px; height: 48px;"></i>
+                                <h5 class="mb-3">Join ReWear to Get This Item!</h5>
+                                <p class="mb-4">Sign up or log in to redeem items with coins or swap with other users.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                                        <i data-feather="user-plus" class="me-2"></i>
+                                        Sign Up Now
+                                    </a>
+                                    <a href="{{ url_for('auth_login') }}" class="btn btn-outline-success btn-lg">
+                                        <i data-feather="log-in" class="me-2"></i>
+                                        Log In
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if current_user.is_authenticated and current_user.id == item.user_id %}
+                        <div class="alert alert-info">
+                            <i data-feather="info" class="me-2"></i>
+                            This is your item.
+                        </div>
+                    {% elif item.status != 'approved' %}
+                        <div class="alert alert-warning">
+                            <i data-feather="clock" class="me-2"></i>
+                            This item is not available for swap.
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="mt-4 text-muted small">
+                    <i data-feather="calendar" class="me-1"></i>
+                    Listed on {{ item.created_at.strftime('%B %d, %Y') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Swap Request Modal -->
+{% if can_interact and current_user.is_authenticated %}
+<div class="modal fade" id="swapModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Swap Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('swap_request', item_id=item.id) }}">
+                {{ swap_form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i data-feather="info" class="me-2"></i>
+                        Choose one of your approved items to offer in exchange for "{{ item.title }}". 
+                        If accepted, the items will be directly swapped between you and the owner.
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ swap_form.offered_item_id.label(class="form-label") }}
+                        {{ swap_form.offered_item_id(class="form-select") }}
+                        {% if swap_form.offered_item_id.errors %}
+                            <div class="text-danger small">
+                                {% for error in swap_form.offered_item_id.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ swap_form.message.label(class="form-label") }}
+                        {{ swap_form.message(class="form-control", rows="3", placeholder="Tell the owner why you'd like this item...") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {% if swap_form.offered_item_id.choices %}
+                        {{ swap_form.submit(class="btn btn-success") }}
+                    {% else %}
+                        <button type="submit" class="btn btn-success" disabled>No items to offer</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
