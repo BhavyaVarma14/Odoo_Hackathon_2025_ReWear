@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ReWear{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i data-feather="home" class="me-2"></i>Dashboard
+                </h2>
+                <a href="{{ url_for('upload_item') }}" class="btn btn-success">
+                    <i data-feather="plus-circle" class="me-2"></i>Upload New Item
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="dollar-sign" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ current_user.coin_balance }}</h4>
+                            <small>Coin Balance</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="package" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ user_items|length }}</h4>
+                            <small>Items Listed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="inbox" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ incoming_requests|length }}</h4>
+                            <small>Pending Requests</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="send" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ outgoing_requests|length }}</h4>
+                            <small>Sent Requests</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Pending Swap Requests -->
+        {% if incoming_requests %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="inbox" class="me-2"></i>Pending Swap Requests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for request in incoming_requests %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ request.requester.username }}</h6>
+                                <p class="text-muted small mb-2">wants to swap their "<strong>{{ request.offered_item.title }}</strong>" for your "<strong>{{ request.requested_item.title }}</strong>"</p>
+                                {% if request.message %}
+                                <p class="small">"{{ request.message }}"</p>
+                                {% endif %}
+                                <small class="text-muted">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <a href="{{ url_for('respond_swap', request_id=request.id, action='accept') }}" 
+                                   class="btn btn-success btn-sm mb-1">Accept</a>
+                                <a href="{{ url_for('respond_swap', request_id=request.id, action='reject') }}" 
+                                   class="btn btn-outline-danger btn-sm">Reject</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Transactions -->
+        {% if transactions %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>Recent Transactions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for transaction in transactions %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-1">{{ transaction.description }}</h6>
+                            <small class="text-muted">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if transaction.type == 'earned' else 'danger' }}">
+                            {{ '+' if transaction.type == 'earned' else '-' }}{{ transaction.amount }} coins
+                        </span>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('notifications') }}" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Pending Redemption Requests (as seller) -->
+        {% if incoming_redemptions %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="truck" class="me-2"></i>Redemption Requests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for request in incoming_redemptions %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ request.requester.username }}</h6>
+                                <p class="text-muted small mb-2">wants to redeem: {{ request.item.title }}</p>
+                                <div class="small mb-2">
+                                    <strong>Shipping to:</strong><br>
+                                    {{ request.address.name }}<br>
+                                    {{ request.address.street_address }}<br>
+                                    {{ request.address.city }}, {{ request.address.state }} {{ request.address.postal_code }}<br>
+                                    {{ request.address.country }}<br>
+                                    Phone: {{ request.address.phone }}
+                                </div>
+                                <small class="text-muted">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <a href="{{ url_for('respond_redemption', request_id=request.id, action='approve') }}" 
+                                   class="btn btn-success btn-sm mb-1">Approve</a>
+                                <a href="{{ url_for('respond_redemption', request_id=request.id, action='reject') }}" 
+                                   class="btn btn-outline-danger btn-sm">Reject</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- My Redemption Requests (as buyer) -->
+        {% if outgoing_redemptions %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="shopping-cart" class="me-2"></i>My Redemption Requests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for request in outgoing_redemptions %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ request.item.title }}</h6>
+                                <p class="text-muted small mb-2">Seller: {{ request.seller.username }}</p>
+                                <small class="text-muted">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if request.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif request.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif request.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- My Items -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="package" class="me-2"></i>My Items
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user_items %}
+                    <div class="row g-3">
+                        {% for item in user_items %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100">
+                                <div class="position-relative">
+                                    {% set images = item.images|from_json if item.images else [] %}
+                                    {% if images %}
+                                        <img src="{{ url_for('static', filename='uploads/' + images[0]) }}" 
+                                             class="card-img-top item-image" alt="{{ item.title }}">
+                                    {% else %}
+                                        <div class="placeholder-image bg-light d-flex align-items-center justify-content-center">
+                                            <i data-feather="image" class="text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        {% if item.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif item.status == 'approved' %}
+                                            <span class="badge bg-success">Live - {{ item.coin_value }} coins</span>
+                                        {% elif item.status == 'swapped' %}
+                                            <span class="badge bg-secondary">Swapped</span>
+                                        {% elif item.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ item.title }}</h6>
+                                    <p class="card-text small text-muted">
+                                        {{ item.description[:80] }}{% if item.description|length > 80 %}...{% endif %}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ item.created_at.strftime('%Y-%m-%d') }}</small>
+                                        {% if item.status == 'approved' %}
+                                        <a href="{{ url_for('item_detail', id=item.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="package" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                        <h5>No items yet</h5>
+                        <p class="text-muted">Start by uploading your first item!</p>
+                        <a href="{{ url_for('upload_item') }}" class="btn btn-success">
+                            <i data-feather="plus-circle" class="me-2"></i>Upload Item
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-dark mb-4">
+                    Sustainable Fashion
+                    <span class="text-success">Exchange</span>
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Join our community of conscious fashion lovers. Exchange unused clothing, earn coins, and help create a more sustainable future.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('browse_items') }}" class="btn btn-success btn-lg">
+                            <i data-feather="search" class="me-2"></i>Browse Items
+                        </a>
+                        <a href="{{ url_for('upload_item') }}" class="btn btn-outline-success btn-lg">
+                            <i data-feather="plus-circle" class="me-2"></i>List an Item
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                            <i data-feather="user-plus" class="me-2"></i>Start Swapping
+                        </a>
+                        <a href="{{ url_for('browse_items') }}" class="btn btn-outline-success btn-lg">
+                            <i data-feather="search" class="me-2"></i>Browse Items
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image text-center">
+                    <div class="sustainable-icon">
+                        <i data-feather="refresh-cw" style="width: 200px; height: 200px;" class="text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How ReWear Works</h2>
+            <p class="text-muted">Simple steps to sustainable fashion sharing</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i data-feather="upload" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h5>Upload Items</h5>
+                    <p class="text-muted">List your unused clothing with photos and descriptions. Our team reviews and assigns coin values.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i data-feather="dollar-sign" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h5>Earn Coins</h5>
+                    <p class="text-muted">Receive coins when your items are approved. Higher quality items earn more coins.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i data-feather="shopping-bag" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h5>Shop & Swap</h5>
+                    <p class="text-muted">Use your coins to redeem items from others or send swap requests.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if featured_items %}
+<!-- Featured Items Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold">Featured Items</h2>
+                <p class="text-muted">Discover the latest additions to our community</p>
+            </div>
+            <a href="{{ url_for('browse_items') }}" class="btn btn-outline-success">
+                View All <i data-feather="arrow-right" class="ms-1"></i>
+            </a>
+        </div>
+        
+        <div class="row g-4">
+            {% for item in featured_items[:6] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card item-card h-100 shadow-sm">
+                    <div class="position-relative">
+                        {% set images = item.images|from_json if item.images else [] %}
+                        {% if images %}
+                            <img src="{{ url_for('static', filename='uploads/' + images[0]) }}" 
+                                 class="card-img-top item-image" alt="{{ item.title }}">
+                        {% else %}
+                            <div class="placeholder-image bg-light d-flex align-items-center justify-content-center">
+                                <i data-feather="image" class="text-muted" style="width: 48px; height: 48px;"></i>
+                            </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-success">{{ item.coin_value }} coins</span>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{ item.title }}</h6>
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <small class="text-muted">
+                                <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
+                                {{ item.owner.username }}
+                            </small>
+                            <span class="badge bg-light text-dark">{{ item.size }}</span>
+                        </div>
+                        <a href="{{ url_for('item_detail', id=item.id) }}" class="btn btn-outline-success btn-sm mt-2">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Statistics Section -->
+<section class="py-5 bg-success text-white">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="fw-bold mb-4">Join Our Growing Community</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="display-6 fw-bold">1000+</h3>
+                        <p class="mb-0">Items Shared</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="display-6 fw-bold">500+</h3>
+                        <p class="mb-0">Community Members</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="display-6 fw-bold">50%</h3>
+                        <p class="mb-0">Less Fashion Waste</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+{% if not current_user.is_authenticated %}
+<section class="py-5">
+    <div class="container">
+        <div class="bg-light rounded-3 p-5 text-center">
+            <h2 class="fw-bold mb-3">Ready to Start Your Sustainable Fashion Journey?</h2>
+            <p class="lead text-muted mb-4">Join thousands of conscious consumers making a difference, one clothing swap at a time.</p>
+            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                <i data-feather="user-plus" class="me-2"></i>Get Started Today
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
