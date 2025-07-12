@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ReWear{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">
+                <i data-feather="shield" class="me-2"></i>Admin Dashboard
+            </h2>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="users" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ stats.total_users }}</h4>
+                            <small>Total Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="package" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ stats.total_items }}</h4>
+                            <small>Total Items</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="check-circle" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ stats.approved_items }}</h4>
+                            <small>Approved Items</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="clock" style="width: 32px; height: 32px;"></i>
+                        <div class="ms-3">
+                            <h4 class="mb-0">{{ stats.pending_approvals }}</h4>
+                            <small>Pending Approval</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Items -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>Pending Items for Approval
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_items %}
+                        {% for item in pending_items %}
+                        <div class="border rounded p-3 mb-3">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    {% set images = item.images|from_json if item.images else [] %}
+                                    {% if images %}
+                                        <img src="{{ url_for('static', filename='uploads/' + images[0]) }}" 
+                                             class="img-fluid rounded admin-item-image" alt="{{ item.title }}">
+                                    {% else %}
+                                        <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded">
+                                            <i data-feather="image" class="text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">{{ item.title }}</h6>
+                                    <p class="text-muted mb-2">{{ item.description[:200] }}{% if item.description|length > 200 %}...{% endif %}</p>
+                                    <div class="row text-sm">
+                                        <div class="col-6">
+                                            <strong>Category:</strong> {{ item.category.name }}<br>
+                                            <strong>Size:</strong> {{ item.size }}<br>
+                                            <strong>Condition:</strong> {{ item.condition }}
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Owner:</strong> {{ item.owner.username }}<br>
+                                            <strong>Submitted:</strong> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                            <strong>Suggested Value:</strong> {{ item.suggested_coin_value or 'Not specified' }} coins<br>
+                                            {% if item.tags %}
+                                            <strong>Tags:</strong> {{ item.tags }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    {% set form = forms[item.id] %}
+                                    <form method="POST" action="{{ url_for('admin_approve_item', item_id=item.id) }}" class="mb-2">
+                                        {{ form.hidden_tag() }}
+                                        <div class="mb-2">
+                                            {{ form.coin_value.label(class="form-label small") }}
+                                            {{ form.coin_value(class="form-control form-control-sm", value=(item.suggested_coin_value or 10)) }}
+                                        </div>
+                                        <div class="d-grid gap-1">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i data-feather="check" class="me-1"></i>Approve
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <div class="d-grid">
+                                        <a href="{{ url_for('admin_reject_item', item_id=item.id) }}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Are you sure you want to reject this item?')">
+                                            <i data-feather="x" class="me-1"></i>Reject
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-feather="check-circle" class="text-success mb-3" style="width: 64px; height: 64px;"></i>
+                            <h5>All caught up!</h5>
+                            <p class="text-muted">No items pending approval at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

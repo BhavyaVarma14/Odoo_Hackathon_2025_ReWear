@@ -1,0 +1,1122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write a review - {{ company.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #3c4043;
+            line-height: 1.5;
+        }
+        
+        .google-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8eaed;
+            display: flex;
+            align-items: center;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin-right: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: #5f6368;
+            font-size: 18px;
+        }
+        
+        .back-btn:hover {
+            background-color: #f1f3f4;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 400;
+            color: #3c4043;
+            flex: 1;
+            text-align: center;
+            margin-right: 40px; /* Offset for back button */
+        }
+        
+        .business-info {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        .company-title {
+            font-size: 18px;
+            font-weight: 400;
+            color: #3c4043;
+            margin: 0;
+        }
+        
+        .review-form {
+            padding: 20px;
+        }
+        
+        .user-info-section {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        .user-avatar {
+            margin-right: 12px;
+        }
+        
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ea4335;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name-input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #dadce0;
+            padding: 8px 0;
+            font-size: 16px;
+            background: transparent;
+            outline: none;
+            margin-bottom: 8px;
+        }
+        
+        .user-name-input:focus {
+            border-bottom-color: #4285f4;
+        }
+        
+        .posting-notice {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #5f6368;
+        }
+        
+        .posting-notice i {
+            margin-right: 4px;
+            font-size: 12px;
+        }
+        
+        .rating-section {
+            margin-bottom: 24px;
+        }
+        
+        .star-container {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .star-container.main-rating .star {
+            font-size: 36px;
+        }
+        
+        .star {
+            font-size: 20px;
+            color: #dadce0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+        
+        .star.active,
+        .star:hover {
+            color: #fbbc04;
+        }
+        
+        .category-ratings {
+            margin-bottom: 24px;
+        }
+        
+        .category-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .category-row:last-child {
+            border-bottom: none;
+        }
+        
+        .category-label {
+            font-size: 16px;
+            color: #3c4043;
+            font-weight: 400;
+        }
+        
+        .category-stars {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .experience-section {
+            margin-bottom: 20px;
+        }
+        
+        .experience-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        .experience-textarea:focus {
+            border-color: #4285f4;
+        }
+        
+        .photos-section {
+            margin-bottom: 20px;
+        }
+        
+        .add-photos-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #4285f4;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .add-photos-btn:hover {
+            background: #e8f0fe;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #3c4043;
+            margin-bottom: 12px;
+        }
+        
+        .section-subtitle {
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 12px;
+        }
+        
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .chip {
+            padding: 8px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 16px;
+            background: white;
+            color: #3c4043;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .chip:hover {
+            border-color: #4285f4;
+            background: #e8f0fe;
+        }
+        
+        .chip.selected {
+            background: #1a73e8;
+            border-color: #1a73e8;
+            color: white;
+        }
+        
+        .expandable-section {
+            margin-bottom: 16px;
+        }
+        
+        .expandable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .expandable-title {
+            font-size: 16px;
+            color: #3c4043;
+        }
+        
+        .expand-icon {
+            font-size: 14px;
+            color: #5f6368;
+            transition: transform 0.2s ease;
+        }
+        
+        .expandable-content {
+            padding: 12px 0;
+            display: none;
+        }
+        
+        .expandable-content.expanded {
+            display: block;
+        }
+        
+        .expandable-header.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .parking-options {
+            margin-top: 12px;
+        }
+        
+        .parking-question {
+            font-size: 14px;
+            color: #3c4043;
+            margin-bottom: 8px;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #e8eaed;
+            background: white;
+            position: sticky;
+            bottom: 0;
+        }
+        
+        .cancel-btn {
+            background: none;
+            border: none;
+            color: #1a73e8;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #f1f3f4;
+        }
+        
+        .post-btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .post-btn:hover:not(:disabled) {
+            background: #1557b0;
+        }
+        
+        .post-btn:disabled {
+            background: #dadce0;
+            cursor: not-allowed;
+        }
+        
+        .success-message {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #34a853;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 28px;
+        }
+        
+        .success-title {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: #3c4043;
+        }
+        
+        .success-subtitle {
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        @media (max-width: 768px) {
+            .google-container {
+                max-width: 100%;
+                box-shadow: none;
+            }
+            
+            .star-container.main-rating .star {
+                font-size: 32px;
+            }
+        }
+        
+        .animate-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .custom-option-input:focus {
+            border-color: #4285f4 !important;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="google-container animate-in">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">{{ company.name }}</div>
+        </div>
+        
+        <!-- Business Info -->
+        <div class="business-info" style="display: none;">
+            <h2 class="company-title">{{ company.name }}</h2>
+        </div>
+        
+        <!-- Review Form -->
+        <div class="review-form" id="reviewForm">
+            <!-- User Info Section -->
+            <div class="user-info-section">
+                <div class="user-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="user-details">
+                    <input type="text" class="user-name-input" placeholder="Enter your name" id="userName">
+                    <div class="posting-notice">
+                        <i class="fas fa-info-circle"></i>
+                        Posting publicly across Google
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overall Rating Section -->
+            <div class="rating-section">
+                <div class="star-container main-rating" id="starContainer">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+            </div>
+
+            <!-- Category Ratings -->
+            <div class="category-ratings" id="categoryRatings">
+                <!-- Categories will be dynamically inserted -->
+            </div>
+            
+            <!-- Experience Description -->
+            <div class="experience-section">
+                <textarea 
+                    class="experience-textarea" 
+                    id="experienceTextarea"
+                    placeholder="Share details of your own experience at this place"></textarea>
+            </div>
+
+            <!-- Add Photos Section -->
+            <div class="photos-section">
+                <input type="file" id="photoInput" multiple accept="image/*,video/*" style="display: none;">
+                <button type="button" class="add-photos-btn" onclick="document.getElementById('photoInput').click()">
+                    <i class="fas fa-camera"></i>
+                    Add photos
+                </button>
+            </div>
+
+            <!-- Industry Specific Questions -->
+            <div id="industryQuestions" style="display: none;">
+                <!-- Questions will be dynamically generated based on industry -->
+            </div>
+
+            <!-- Expandable Sections -->
+            <div id="expandableSections">
+                <!-- Sections will be dynamically generated based on industry -->
+            </div>
+
+            
+        </div>
+        
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="success-title">Review posted</div>
+            <div class="success-subtitle">Thank you for your feedback</div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <button class="cancel-btn" onclick="goBack()">Cancel</button>
+            <button class="post-btn" id="postBtn" onclick="submitReview()" disabled>Post</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedRating = 0;
+        const companyId = {{ company.id }};
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const industry = '{{ company.industry }}';
+            
+            // Initialize category ratings based on industry
+            initializeCategoryRatings(industry);
+            
+            // Initialize industry-specific questions
+            initializeIndustryQuestions(industry);
+            
+            // Initialize expandable sections
+            initializeExpandableSections(industry);
+            
+            // Initialize chip functionality
+            initializeChips();
+            
+            // Initialize main rating
+            initializeMainRating();
+            
+            // Initialize photo upload
+            initializePhotoUpload();
+            
+            // Initialize Post button state
+            updatePostButton();
+        });
+        
+        function initializeCategoryRatings(industry) {
+            const categoryRatings = document.getElementById('categoryRatings');
+            let categories = [];
+            
+            if (industry === 'food') {
+                categories = ['Food', 'Service', 'Atmosphere'];
+            } else if (industry === 'resort') {
+                categories = ['Rooms', 'Service', 'Location'];
+            } else if (industry === 'retail') {
+                categories = ['Product Quality', 'Customer Service', 'Store Experience'];
+            } else if (industry === 'healthcare') {
+                categories = ['Care Quality', 'Staff', 'Facilities'];
+            } else if (industry === 'automotive') {
+                categories = ['Service Quality', 'Staff', 'Value'];
+            } else if (industry === 'beauty') {
+                categories = ['Service Quality', 'Staff', 'Ambiance'];
+            } else if (industry === 'education') {
+                categories = ['Teaching Quality', 'Facilities', 'Support'];
+            } else if (industry === 'fitness') {
+                categories = ['Equipment', 'Staff', 'Facilities'];
+            } else {
+                categories = ['Service', 'Quality', 'Value'];
+            }
+            
+            categoryRatings.innerHTML = categories.map(category => `
+                <div class="category-row">
+                    <div class="category-label">${category}</div>
+                    <div class="category-stars" data-category="${category.toLowerCase().replace(/\s+/g, '-')}">
+                        ${[1,2,3,4,5].map(rating => `
+                            <span class="star category-star" data-rating="${rating}">★</span>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners for category ratings
+            document.querySelectorAll('.category-star').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    const categoryStars = this.parentElement;
+                    updateCategoryStars(categoryStars, rating);
+                    updatePostButton();
+                });
+                
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    const categoryStars = this.parentElement;
+                    highlightCategoryStars(categoryStars, rating);
+                });
+                
+                star.addEventListener('mouseleave', function() {
+                    const categoryStars = this.parentElement;
+                    const currentRating = categoryStars.dataset.rating || 0;
+                    updateCategoryStars(categoryStars, currentRating);
+                });
+            });
+        }
+        
+        function initializeIndustryQuestions(industry) {
+            const questionsContainer = document.getElementById('industryQuestions');
+            let questionsHTML = '';
+            
+            if (industry === 'food') {
+                questionsHTML = `
+                    <div class="section-title">What did you get?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="breakfast">Breakfast</button>
+                        <button type="button" class="chip" data-value="brunch">Brunch</button>
+                        <button type="button" class="chip" data-value="lunch">Lunch</button>
+                        <button type="button" class="chip" data-value="dinner">Dinner</button>
+                        <button type="button" class="chip" data-value="other">Other</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about what you got..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">How much did you spend per person?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="₹1-200">₹1-200</button>
+                        <button type="button" class="chip" data-value="₹200-400">₹200-400</button>
+                        <button type="button" class="chip" data-value="₹400-600">₹400-600</button>
+                        <button type="button" class="chip" data-value="₹600-800">₹600-800</button>
+                        <button type="button" class="chip" data-value="₹800-1000">₹800-1000+</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the pricing..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">Which dishes do you recommend?</div>
+                    <div class="section-subtitle">(Select all that apply)</div>
+                    <div class="chip-group multi-select">
+                        <button type="button" class="chip" data-value="appetizers">Appetizers</button>
+                        <button type="button" class="chip" data-value="main-course">Main Course</button>
+                        <button type="button" class="chip" data-value="desserts">Desserts</button>
+                        <button type="button" class="chip" data-value="beverages">Beverages</button>
+                        <button type="button" class="chip" data-value="special-items">Special Items</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about recommended dishes..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+                `;
+            } else if (industry === 'resort') {
+                questionsHTML = `
+                    <div class="section-title">What type of stay was this?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="business">Business</button>
+                        <button type="button" class="chip" data-value="leisure">Leisure</button>
+                        <button type="button" class="chip" data-value="family">Family Trip</button>
+                        <button type="button" class="chip" data-value="romantic">Romantic Getaway</button>
+                        <button type="button" class="chip" data-value="group">Group Travel</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about your stay type..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">How much did you spend per night?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="₹2000-5000">₹2,000-5,000</button>
+                        <button type="button" class="chip" data-value="₹5000-10000">₹5,000-10,000</button>
+                        <button type="button" class="chip" data-value="₹10000-20000">₹10,000-20,000</button>
+                        <button type="button" class="chip" data-value="₹20000+">₹20,000+</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the pricing..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">Which amenities did you enjoy?</div>
+                    <div class="section-subtitle">(Select all that apply)</div>
+                    <div class="chip-group multi-select">
+                        <button type="button" class="chip" data-value="pool">Pool</button>
+                        <button type="button" class="chip" data-value="spa">Spa</button>
+                        <button type="button" class="chip" data-value="restaurant">Restaurant</button>
+                        <button type="button" class="chip" data-value="gym">Fitness Center</button>
+                        <button type="button" class="chip" data-value="room-service">Room Service</button>
+                        <button type="button" class="chip" data-value="wifi">WiFi</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about amenities..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+                `;
+            } else if (industry === 'retail') {
+                questionsHTML = `
+                    <div class="section-title">What did you purchase?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="clothing">Clothing</button>
+                        <button type="button" class="chip" data-value="electronics">Electronics</button>
+                        <button type="button" class="chip" data-value="home-goods">Home Goods</button>
+                        <button type="button" class="chip" data-value="accessories">Accessories</button>
+                        <button type="button" class="chip" data-value="other">Other</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about your purchase..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">How much did you spend?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="₹500-1000">₹500-1,000</button>
+                        <button type="button" class="chip" data-value="₹1000-2500">₹1,000-2,500</button>
+                        <button type="button" class="chip" data-value="₹2500-5000">₹2,500-5,000</button>
+                        <button type="button" class="chip" data-value="₹5000+">₹5,000+</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the pricing..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+                `;
+            } else if (industry === 'healthcare') {
+                questionsHTML = `
+                    <div class="section-title">What type of service did you receive?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="consultation">Consultation</button>
+                        <button type="button" class="chip" data-value="treatment">Treatment</button>
+                        <button type="button" class="chip" data-value="surgery">Surgery</button>
+                        <button type="button" class="chip" data-value="check-up">Regular Check-up</button>
+                        <button type="button" class="chip" data-value="emergency">Emergency Care</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the service..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">How long did you wait?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="no-wait">No wait</button>
+                        <button type="button" class="chip" data-value="5-15min">5-15 minutes</button>
+                        <button type="button" class="chip" data-value="15-30min">15-30 minutes</button>
+                        <button type="button" class="chip" data-value="30min+">More than 30 minutes</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about wait times..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+                `;
+            } else {
+                // General business questions
+                questionsHTML = `
+                    <div class="section-title">What service did you use?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="consultation">Consultation</button>
+                        <button type="button" class="chip" data-value="product">Product Purchase</button>
+                        <button type="button" class="chip" data-value="service">Service</button>
+                        <button type="button" class="chip" data-value="support">Customer Support</button>
+                        <button type="button" class="chip" data-value="other">Other</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the service..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+
+                    <div class="section-title">How would you rate the value?</div>
+                    <div class="chip-group">
+                        <button type="button" class="chip" data-value="excellent-value">Excellent Value</button>
+                        <button type="button" class="chip" data-value="good-value">Good Value</button>
+                        <button type="button" class="chip" data-value="fair-value">Fair Value</button>
+                        <button type="button" class="chip" data-value="poor-value">Poor Value</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="text" 
+                               class="custom-option-input" 
+                               placeholder="Tell others about the value..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                    </div>
+                `;
+            }
+            
+            if (questionsHTML) {
+                questionsContainer.innerHTML = questionsHTML;
+                questionsContainer.style.display = 'block';
+            }
+        }
+        
+        function initializeExpandableSections(industry) {
+            const sectionsContainer = document.getElementById('expandableSections');
+            let sectionsHTML = '';
+            
+            // Accessibility section (common for most industries)
+            if (['food', 'resort', 'retail', 'healthcare'].includes(industry)) {
+                sectionsHTML += `
+                    <div class="expandable-section">
+                        <div class="expandable-header" onclick="toggleExpandable(this)">
+                            <div class="expandable-title">Accessibility</div>
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="chip-group">
+                                <button type="button" class="chip" data-value="wheelchair-accessible">Wheelchair accessible</button>
+                                <button type="button" class="chip" data-value="accessible-parking">Accessible parking</button>
+                                <button type="button" class="chip" data-value="accessible-restroom">Accessible restroom</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Industry-specific sections
+            if (industry === 'food') {
+                sectionsHTML += `
+                    <div class="expandable-section">
+                        <div class="expandable-header" onclick="toggleExpandable(this)">
+                            <div class="expandable-title">Dietary options</div>
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="chip-group">
+                                <button type="button" class="chip" data-value="vegetarian">Vegetarian options</button>
+                                <button type="button" class="chip" data-value="vegan">Vegan options</button>
+                                <button type="button" class="chip" data-value="gluten-free">Gluten-free options</button>
+                            </div>
+                            <div style="margin-top: 12px;">
+                                <input type="text" 
+                                       class="custom-option-input" 
+                                       placeholder="Tell others about dietary options..."
+                                       style="width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s ease;">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (industry === 'resort') {
+                sectionsHTML += `
+                    <div class="expandable-section">
+                        <div class="expandable-header" onclick="toggleExpandable(this)">
+                            <div class="expandable-title">Family-friendly features</div>
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="chip-group">
+                                <button type="button" class="chip" data-value="kids-club">Kids club</button>
+                                <button type="button" class="chip" data-value="babysitting">Babysitting services</button>
+                                <button type="button" class="chip" data-value="family-rooms">Family rooms</button>
+                                <button type="button" class="chip" data-value="kids-pool">Kids pool</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (industry === 'retail') {
+                sectionsHTML += `
+                    <div class="expandable-section">
+                        <div class="expandable-header" onclick="toggleExpandable(this)">
+                            <div class="expandable-title">Store features</div>
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="chip-group">
+                                <button type="button" class="chip" data-value="easy-returns">Easy returns</button>
+                                <button type="button" class="chip" data-value="personal-shopping">Personal shopping</button>
+                                <button type="button" class="chip" data-value="fitting-rooms">Fitting rooms</button>
+                                <button type="button" class="chip" data-value="gift-wrapping">Gift wrapping</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Parking section (common for physical locations)
+            if (['food', 'resort', 'retail', 'healthcare'].includes(industry)) {
+                sectionsHTML += `
+                    <div class="expandable-section">
+                        <div class="expandable-header" onclick="toggleExpandable(this)">
+                            <div class="expandable-title">Parking</div>
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="parking-question">How is the parking here?</div>
+                            <div class="chip-group">
+                                <button type="button" class="chip" data-value="plenty">Plenty of parking</button>
+                                <button type="button" class="chip" data-value="somewhat-difficult">Somewhat difficult to find parking</button>
+                                <button type="button" class="chip" data-value="difficult">Difficult to find parking</button>
+                                <button type="button" class="chip" data-value="not-sure">Not sure</button>
+                            </div>
+                            
+                            <div class="parking-options">
+                                <div class="parking-question">What parking options are available?</div>
+                                <div class="section-subtitle">(Select all that apply)</div>
+                                <div class="chip-group multi-select">
+                                    <button type="button" class="chip" data-value="free-parking">Free parking</button>
+                                    <button type="button" class="chip" data-value="paid-parking">Paid parking</button>
+                                    <button type="button" class="chip" data-value="valet-parking">Valet parking</button>
+                                    <button type="button" class="chip" data-value="street-parking">Street parking</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            sectionsContainer.innerHTML = sectionsHTML;
+        }
+        
+        function updateCategoryStars(container, rating) {
+            container.dataset.rating = rating;
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        function highlightCategoryStars(container, rating) {
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        function initializeMainRating() {
+            const stars = document.querySelectorAll('#starContainer .star');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    updateMainStars(selectedRating);
+                    updatePostButton();
+                });
+                
+                star.addEventListener('mouseenter', function() {
+                    if (selectedRating === 0) {
+                        const hoverRating = parseInt(this.dataset.rating);
+                        updateMainStars(hoverRating);
+                    }
+                });
+                
+                star.addEventListener('mouseleave', function() {
+                    updateMainStars(selectedRating);
+                });
+            });
+        }
+        
+        function updateMainStars(rating) {
+            const stars = document.querySelectorAll('#starContainer .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        function initializeChips() {
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const isMultiSelect = this.closest('.chip-group').classList.contains('multi-select');
+                    
+                    if (isMultiSelect) {
+                        this.classList.toggle('selected');
+                    } else {
+                        // Single select - remove selection from siblings
+                        this.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                    }
+                    
+                    updatePostButton();
+                });
+            });
+        }
+        
+        function toggleExpandable(header) {
+            const content = header.nextElementSibling;
+            const isExpanded = header.classList.contains('expanded');
+            
+            if (isExpanded) {
+                header.classList.remove('expanded');
+                content.classList.remove('expanded');
+            } else {
+                header.classList.add('expanded');
+                content.classList.add('expanded');
+            }
+        }
+        
+        function initializePhotoUpload() {
+            const photoInput = document.getElementById('photoInput');
+            const addPhotosBtn = document.querySelector('.add-photos-btn');
+            
+            photoInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    addPhotosBtn.innerHTML = `
+                        <i class="fas fa-camera"></i>
+                        ${files.length} photo${files.length > 1 ? 's' : ''} selected
+                    `;
+                } else {
+                    addPhotosBtn.innerHTML = `
+                        <i class="fas fa-camera"></i>
+                        Add photos
+                    `;
+                }
+            });
+        }
+        
+        function updatePostButton() {
+            const postBtn = document.getElementById('postBtn');
+            postBtn.disabled = selectedRating === 0;
+        }
+        
+        function submitReview() {
+            const userName = document.getElementById('userName').value.trim();
+            const experienceText = document.getElementById('experienceTextarea').value.trim();
+            const postBtn = document.getElementById('postBtn');
+            
+            // Collect all form data
+            const categoryRatings = {};
+            document.querySelectorAll('.category-stars').forEach(container => {
+                const category = container.dataset.category;
+                const rating = container.dataset.rating || 0;
+                categoryRatings[category] = rating;
+            });
+            
+            const selectedChips = [];
+            document.querySelectorAll('.chip.selected').forEach(chip => {
+                selectedChips.push(chip.dataset.value);
+            });
+            
+            const reviewData = {
+                userName: userName,
+                mainRating: selectedRating,
+                categoryRatings: categoryRatings,
+                experienceText: experienceText,
+                selectedChips: selectedChips
+            };
+            
+            // Show loading state
+            postBtn.textContent = 'Posting...';
+            postBtn.disabled = true;
+            
+            // Submit the review
+            const formData = new FormData();
+            formData.append('company_id', companyId);
+            formData.append('rating', selectedRating);
+            formData.append('comment', JSON.stringify(reviewData));
+            formData.append('customer_name', userName);
+            
+            fetch('/submit_feedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessMessage();
+                } else {
+                    throw new Error(data.message || 'Submission failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showSuccessMessage();
+            });
+        }
+        
+        function showSuccessMessage() {
+            document.getElementById('reviewForm').style.display = 'none';
+            document.querySelector('.actions').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            setTimeout(() => {
+                goBack();
+            }, 2000);
+        }
+        
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

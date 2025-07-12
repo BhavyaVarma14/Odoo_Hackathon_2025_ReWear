@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Feedback - {{ company.name }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="review-page-body"
+>
+
+<!-- Main Content -->
+<div class="review-fullscreen-container">
+    <div class="review-card animate-fade-in">
+                    <!-- Company Header -->
+                    <div class="company-header text-center mb-4">
+                        <div class="company-logo mb-3">
+                            {% if company.logo_data %}
+                            <img src="{{ url_for('company_logo', company_id=company.id) }}" 
+                                 alt="{{ company.name }} logo" 
+                                 class="img-fluid rounded-circle" 
+                                 style="max-width: 80px; max-height: 80px; object-fit: cover;">
+                            {% else %}
+                            <i class="fas fa-store fa-3x text-primary"></i>
+                            {% endif %}
+                        </div>
+                        <h1 class="company-name h2 fw-bold">{{ company.name }}</h1>
+                        <p class="company-subtitle text-muted">
+                            How was your experience with us?
+                        </p>
+                    </div>
+
+                <!-- Rating Section -->
+                <div class="rating-section text-center mb-4">
+                    <div class="star-rating mb-3" id="starRating">
+                        <i class="fas fa-star star" data-rating="1"></i>
+                        <i class="fas fa-star star" data-rating="2"></i>
+                        <i class="fas fa-star star" data-rating="3"></i>
+                        <i class="fas fa-star star" data-rating="4"></i>
+                        <i class="fas fa-star star" data-rating="5"></i>
+                    </div>
+                    <p class="rating-text text-muted" id="ratingText">
+                        Click on stars to rate your experience
+                    </p>
+                </div>
+
+                <!-- Feedback Form -->
+                <form id="feedbackForm" style="display: none;">
+                    <input type="hidden" id="companyId" value="{{ company.id }}">
+                    <input type="hidden" id="selectedRating" value="0">
+                    
+                    <div class="feedback-content" id="feedbackContent">
+                        <!-- Content will be dynamically inserted here -->
+                    </div>
+                </form>
+
+                <!-- Success State -->
+                <div id="successState" style="display: none;" class="text-center">
+                    <div class="success-animation mb-4">
+                        <i class="fas fa-check-circle fa-4x text-success animate-bounce"></i>
+                    </div>
+                    <h3 class="text-success mb-3">Thank You!</h3>
+                    <p class="text-muted" id="successMessage"></p>
+                    
+                    <!-- Copy Review Message (for 4+ stars) -->
+                    <div id="reviewMessageSection" style="display: none;">
+                        <div class="review-message-card mt-4 p-4 bg-light rounded">
+                            <h5 class="mb-3">
+                                <i class="fas fa-copy me-2"></i>
+                                Share Your Review
+                            </h5>
+                            <div class="input-group mb-3">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="reviewMessage" 
+                                       readonly>
+                                <button class="btn btn-outline-primary" 
+                                        type="button" 
+                                        id="copyButton">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary btn-lg w-100" 
+                                    id="googleReviewButton">
+                                <i class="fab fa-google me-2"></i>
+                                Leave Review on Google
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-secondary mt-4" onclick="resetForm()">
+                        <i class="fas fa-redo me-2"></i>
+                        Leave Another Review
+                    </button>
+                </div>
+    </div>
+</div>
+
+<!-- Floating Particles Background -->
+<div class="particles-container">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+let selectedRating = 0;
+let companyId = {{ company.id }};
+
+// Rating system
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingText = document.getElementById('ratingText');
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            updateStarDisplay(selectedRating);
+            showFeedbackForm(selectedRating);
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            const hoverRating = parseInt(this.dataset.rating);
+            updateStarDisplay(hoverRating, true);
+        });
+        
+        star.addEventListener('mouseleave', function() {
+            updateStarDisplay(selectedRating);
+        });
+    });
+});
+
+function updateStarDisplay(rating, isHover = false) {
+    const stars = document.querySelectorAll('.star');
+    const ratingTexts = [
+        'Click on stars to rate your experience',
+        'Poor - We\'d like to hear about your experience',
+        'Fair - Help us improve your experience', 
+        'Good - Tell us about your experience',
+        'Very Good - We\'d love to hear from you!',
+        'Excellent - Share your experience with others!'
+    ];
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add(isHover ? 'star-hover' : 'star-active');
+            star.classList.remove(isHover ? 'star-active' : 'star-hover');
+        } else {
+            star.classList.remove('star-active', 'star-hover');
+        }
+    });
+    
+    document.getElementById('ratingText').textContent = ratingTexts[rating];
+}
+
+function showFeedbackForm(rating) {
+    document.getElementById('selectedRating').value = rating;
+    
+    // If rating is 3 or less, auto-submit and redirect to custom Google-style review page
+    if (rating <= 3) {
+        // Show loading state
+        const ratingText = document.getElementById('ratingText');
+        ratingText.textContent = 'Submitting your rating...';
+        
+        // Submit the rating to our database first
+        const formData = new FormData();
+        formData.append('company_id', companyId);
+        formData.append('rating', rating);
+        formData.append('comment', ''); // Empty comment for auto-submit
+        formData.append('customer_name', ''); // Empty name
+        
+        fetch('/submit_feedback', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to custom Google-style review page
+                ratingText.textContent = 'Redirecting to review page...';
+                setTimeout(() => {
+                    window.location.href = `/google-style-review/${companyId}`;
+                }, 500);
+            } else {
+                throw new Error(data.message || 'Submission failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting rating:', error);
+            // Still redirect to custom review page even if submission fails
+            ratingText.textContent = 'Redirecting to review page...';
+            setTimeout(() => {
+                window.location.href = `/google-style-review/${companyId}`;
+            }, 500);
+        });
+        
+        return; // Exit the function here
+    }
+    
+    // If rating is 4 or 5 stars, submit rating and redirect to Google Reviews
+    if (rating >= 4) {
+        // Show loading state
+        const ratingText = document.getElementById('ratingText');
+        ratingText.textContent = 'Submitting your rating...';
+        
+        // Submit the rating to our database first
+        const formData = new FormData();
+        formData.append('company_id', companyId);
+        formData.append('rating', rating);
+        formData.append('comment', ''); // Empty comment for high ratings
+        formData.append('customer_name', ''); // Empty name
+        
+        fetch('/submit_feedback', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update text and redirect to Google Reviews
+                ratingText.textContent = 'Redirecting to Google Reviews...';
+                
+                setTimeout(() => {
+                    const googleReviewUrl = data.google_review_url || '{{ company.google_review_url|safe }}';
+                    if (googleReviewUrl && googleReviewUrl !== '') {
+                        window.open(googleReviewUrl, '_blank');
+                    }
+                    // Reset the form after redirect
+                    setTimeout(() => {
+                        resetForm();
+                    }, 1000);
+                }, 1000);
+            } else {
+                throw new Error(data.message || 'Submission failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting rating:', error);
+            // Still redirect to Google Reviews even if our submission fails
+            ratingText.textContent = 'Redirecting to Google Reviews...';
+            const googleReviewUrl = '{{ company.google_review_url|safe }}';
+            if (googleReviewUrl && googleReviewUrl !== '') {
+                window.open(googleReviewUrl, '_blank');
+            }
+            resetForm();
+        });
+        
+        return; // Exit the function here - don't show any form
+    }
+    
+    // Only show internal feedback form for ratings below 4
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackContent = document.getElementById('feedbackContent');
+    
+    // Internal feedback form for low ratings
+    const formHtml = `
+        <div class="feedback-fields animate-slide-up">
+            <div class="mb-3">
+                <label for="customerName" class="form-label fw-semibold">
+                    <i class="fas fa-user me-2"></i>
+                    Your Name (Optional)
+                </label>
+                <input type="text" 
+                       class="form-control form-control-lg" 
+                       id="customerName" 
+                       name="customer_name"
+                       placeholder="Enter your name">
+            </div>
+            
+            <div class="mb-4">
+                <label for="comment" class="form-label fw-semibold">
+                    <i class="fas fa-comment me-2"></i>
+                    Tell us about your experience
+                </label>
+                <textarea class="form-control form-control-lg" 
+                          id="comment" 
+                          name="comment" 
+                          rows="4" 
+                          placeholder="Help us understand what went wrong and how we can improve..."
+                          required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg w-100 btn-animated">
+                <i class="fas fa-paper-plane me-2"></i>
+                Submit Feedback
+            </button>
+        </div>
+    `;
+    
+    feedbackContent.innerHTML = formHtml;
+    feedbackForm.style.display = 'block';
+    
+    // Animate form appearance
+    setTimeout(() => {
+        feedbackForm.classList.add('animate-fade-in');
+    }, 100);
+    
+    // Add form submit handler
+    feedbackForm.addEventListener('submit', handleSubmit);
+}
+
+function handleSubmit(e) {
+    e.preventDefault();
+    
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    
+    // Show loading state
+    submitButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Submitting...
+    `;
+    submitButton.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('company_id', companyId);
+    formData.append('rating', selectedRating);
+    formData.append('comment', document.getElementById('comment').value);
+    formData.append('customer_name', document.getElementById('customerName').value);
+    
+    fetch('/submit_feedback', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessState(data);
+        } else {
+            throw new Error(data.message || 'Submission failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+        alert('Error submitting feedback. Please try again.');
+    });
+}
+
+function showSuccessState(data) {
+    document.getElementById('feedbackForm').style.display = 'none';
+    const successState = document.getElementById('successState');
+    
+    if (data.rating >= 4) {
+        document.getElementById('successMessage').textContent = 
+            'Your feedback has been submitted! Would you like to share your experience on Google?';
+        
+        // Show review message section
+        const reviewSection = document.getElementById('reviewMessageSection');
+        const reviewMessage = document.getElementById('reviewMessage');
+        const googleButton = document.getElementById('googleReviewButton');
+        
+        reviewMessage.value = data.review_message;
+        googleButton.onclick = () => window.open(data.google_review_url, '_blank');
+        
+        reviewSection.style.display = 'block';
+        
+        // Copy functionality
+        document.getElementById('copyButton').addEventListener('click', function() {
+            reviewMessage.select();
+            reviewMessage.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(reviewMessage.value).then(() => {
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+        });
+    } else {
+        document.getElementById('successMessage').textContent = 
+            'Thank you for your feedback! We will use this information to improve our service.';
+    }
+    
+    successState.style.display = 'block';
+    successState.classList.add('animate-fade-in');
+}
+
+function resetForm() {
+    selectedRating = 0;
+    document.getElementById('feedbackForm').style.display = 'none';
+    document.getElementById('successState').style.display = 'none';
+    updateStarDisplay(0);
+    document.getElementById('ratingText').textContent = 'Click on stars to rate your experience';
+}
+</script>
+</body>
+</html>
